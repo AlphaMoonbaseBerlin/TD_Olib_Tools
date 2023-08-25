@@ -1,9 +1,7 @@
+
 '''Info Header Start
 Name : extFileDownloader
-Author : Alpha Moonbase
-Version : 0
-Build : 3
-Savetimestamp : 1669911375
+Author : Wieland@AMB-ZEPH15
 Saveorigin : Project.toe
 Saveversion : 2022.28040
 Info Header End'''

@@ -1,9 +1,7 @@
+
 '''Info Header Start
 Name : downloader_utils
-Author : Alpha Moonbase
-Version : 0
-Build : 3
-Savetimestamp : 1669911388
+Author : Wieland@AMB-ZEPH15
 Saveorigin : Project.toe
 Saveversion : 2022.28040
 Info Header End'''
