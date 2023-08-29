@@ -15,18 +15,16 @@ def main():
         description = "Fetches a component from the provided URL and filepath",
     )
     argParser.add_argument("url")
-    argParser.add_argument("downloadFolder")
-    argParser.add_argument("filename")
+    argParser.add_argument("filepath")
 
     arguments = argParser.parse_args()
 
     
 
-    downloadFolder = pathlib.Path( arguments.downloadFolder )
-    downloadFolder.mkdir(parents=True, exist_ok=True)
+    filePath = pathlib.Path( arguments.filepath )
+    filePath.parent.mkdir(parents=True, exist_ok=True)
     
-    filePath = pathlib.Path( downloadFolder, arguments.filename )
-    print(f"Downloading {arguments.filename} to {arguments.downloadFolder} from {arguments.url}")#
+    print(f"Downloading {arguments.filepath} from {arguments.url}")#
     response = requests.get(arguments.url, stream=True)
     if not response.ok: 
         raise requests.ConnectionError

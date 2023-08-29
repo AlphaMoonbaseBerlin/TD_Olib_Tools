@@ -8,7 +8,7 @@ Info Header End'''
 from os import path
 import pathlib
 import subprocess
-import functools
+import td
 
 
 class extOlibDependancy:
@@ -22,17 +22,11 @@ class extOlibDependancy:
 		self.GetRemoteFilepath.cache_clear()
 		self.ownerComp.cook( force = True )
 
-	@functools.lru_cache(maxsize=1)
-	def GetGlobalComponent(self):
-		globalOPShortcut = self.ownerComp.par.Targetopshortcut.eval()
-		return getattr( op, globalOPShortcut, None ) or self.downloadAndPlace()
-
-	@functools.lru_cache(maxsize=1)
-	def GetRemoteFilepath(self):
-		filename, downloadpath = self.fetchRemoteData()
-		return self.downloadFile( 	filename,
-									downloadpath,
-									self.ownerComp.par.Downloaddirectory.eval() )
+	def filepath(self)-> pathlib.Path:
+		return pathlib.Path( 
+			self.ownerComp.par.Downloaddirectory.eval(),
+			self.ownerComp.par.Filename.eval() 
+		)
 
 	def fetchRemoteData(self):
 		targetmode = self.ownerComp.par.Target.eval()
@@ -42,28 +36,39 @@ class extOlibDependancy:
 		if targetmode == "Callback" : remote = self.ownerComp.op("callback_remote")
 		return remote.ExternalData()
 
-	def downloadAndPlace(self):
-		target_tox = self.GetRemoteFilepath()
-		if not target_tox: return None
+	def GetRemoteFilepath(self):
+		filepath = self.filepath()
+		if filepath.is_file(): return filepath
+		downloadURL = self.fetchRemoteData()
+		return self.downloadFile( 	filepath,
+									downloadURL )
+	
+	def GetGlobalComponent(self):
+		globalOPShortcut = self.ownerComp.par.Targetopshortcut.eval()
+		return getattr( op, globalOPShortcut, None ) or self.downloadAndPlace()
 
-		new_comp = self.getTargetAndPlace().loadTox( target_tox )
-		new_comp.par.opshortcut = self.ownerComp.par.Targetopshortcut.eval()
-		return new_comp
+	def downloadAndPlace(self):
+		targetTox = self.GetRemoteFilepath()
+		if not targetTox: return None
+
+		newComp 					= self.getTargetAndPlace().loadTox( targetTox )
+		newComp.par.opshortcut.val = self.ownerComp.par.Targetopshortcut.eval()
+		return newComp
 
 	def getTargetAndPlace(self):
-		operator = root
+		operator = td.root
 		for path_element in self.ownerComp.par.Targetplace.val.split("/"):
 			if not path_element: continue
 			operator = operator.op(path_element) or operator.create(baseCOMP, tdu.legalName(path_element))
 		return operator
 
-	def downloadFile(self, filename, url, target_dir):
-		downloadScriptDAT = self.ownerComp.op("downloadScript")
-		downloadScript = pathlib.Path( f"TDImportCache/Scripts/{downloadScriptDAT.id}" )
+	def downloadFile(self, filepath:pathlib.Path, url:str):
+		downloadScriptDAT 	= self.ownerComp.op("downloadScript")
+		downloadScript 		= pathlib.Path( f"TDImportCache/Scripts/{downloadScriptDAT.id}" )
 		downloadScript.is_file() or downloadScriptDAT.save(downloadScript, createFolders = True)
 		executable = pathlib.Path( app.binFolder, "python.exe" )
 		subprocess.call( 
-			[ executable, downloadScript, url, target_dir, filename]
+			[ executable, downloadScript, url, filepath]
 			) 
-		return pathlib.Path( target_dir, filename)
+		return filepath
 	

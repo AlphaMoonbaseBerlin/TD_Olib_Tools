@@ -16,4 +16,5 @@ class urlRemote:
 	def ExternalData(self):
 		downloadpath = self.ownerComp.par.Url.eval()
 		filename = self.ownerComp.par.Filename.eval() or downloadpath.split("/")[-1]
-		return filename, downloadpath
+		return downloadpath
+		#return filename, downloadpath
