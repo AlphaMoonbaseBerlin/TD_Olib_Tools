@@ -1,4 +1,3 @@
-﻿
 '''Info Header Start
 Name : extOlibDependancy
 Author : Wieland@AMB-ZEPH15
@@ -19,7 +18,6 @@ class extOlibDependancy:
 		self.ownerComp = ownerComp
 
 	def ClearCache(self):
-		debug( "CÃ¶ear Cache")
 		self.GetGlobalComponent.cache_clear()
 		self.GetRemoteFilepath.cache_clear()
 		self.ownerComp.cook( force = True )
@@ -41,6 +39,7 @@ class extOlibDependancy:
 		if targetmode == "Olib"		: remote = self.ownerComp.op("olib_remote")
 		if targetmode == "Github"	: remote = self.ownerComp.op("github_remote")
 		if targetmode == "Url"		: remote = self.ownerComp.op("url_remote")
+		if targetmode == "Callback" : remote = self.ownerComp.op("callback_remote")
 		return remote.ExternalData()
 
 	def downloadAndPlace(self):
