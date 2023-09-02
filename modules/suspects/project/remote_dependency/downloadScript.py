@@ -22,13 +22,13 @@ def main():
     
 
     filePath = pathlib.Path( arguments.filepath )
-    filePath.parent.mkdir(parents=True, exist_ok=True)
+    
     
     print(f"Downloading {arguments.filepath} from {arguments.url}")#
     response = requests.get(arguments.url, stream=True)
     if not response.ok: 
         raise requests.ConnectionError
-    
+    filePath.parent.mkdir(parents=True, exist_ok=True)
     with filePath.open( "wb" ) as targetFileHandler:
         totalLength = 0
         targetLength = response.headers["Content-Length"]
