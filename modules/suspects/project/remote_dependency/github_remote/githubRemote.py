@@ -4,19 +4,8 @@ Author : Wieland@AMB-ZEPH15
 Saveorigin : Project.toe
 Saveversion : 2022.28040
 Info Header End'''
-"""
-Extension classes enhance TouchDesigner components with python. An
-extension is accessed via ext.ExtensionClassName from any operator
-within the extended component. If the extension is promoted via its
-Promote Extension parameter, all its attributes with capitalized names
-can be accessed externally, e.g. op('yourComp').PromotedFunction().
 
-Help: search "Extensions" in wiki
-"""
-
-from TDStoreTools import StorageManager
-import TDFunctions as TDF
-
+import re, requests
 class githubRemote:
 	"""
 	githubRemote description
@@ -24,28 +13,41 @@ class githubRemote:
 	def __init__(self, ownerComp):
 		# The component to which this extension is attached
 		self.ownerComp = ownerComp
+		self.log = self.ownerComp.op("logger").Log
+	
+	def checkResponse(self, response:requests.Request ):
+		if not response.ok: 
+			self.log("Could not resolve reques to OLIB.", response.url , response.status_code, response.reason)
+			raise Exception( "Error Response. Check Logs!")
+		responseData = response.json()
+		if not responseData:
+			self.log("Olib returned empty response!", response.url, responseData )
+			raise Exception( "Empty Response. Check Logs!")
+		return responseData
 
-		# properties
-		TDF.createProperty(self, 'MyProperty', value=0, dependable=True,
-						   readOnly=False)
+	def getRepoData(self):
+		return [ str(value) for value in re.search(r"github\.com\/([\w,-]+)\/([\w,-]+).*", self.ownerComp.par.Repository.eval()).groups() ]
+	
+	def searchFile(self, releaseDict:dict):
+		for assetEement in releaseDict["assets"]:
+			if re.match( self.ownerComp.par.Fileregex.eval(), assetEement["name"]): 
+				return assetEement.get("browser_download_url", "" )
 
-		# attributes:
-		self.a = 0 # attribute
-		self.B = 1 # promoted attribute
+	def fetchLatest(self):
+		owner, repoName = self.getRepoData()[0:2]
+		apiEndpoint = f" https://api.github.com/repos/{owner}/{repoName}/releases/latest"
+		response = requests.get( apiEndpoint )
+		return self.searchFile( self.checkResponse( response ) )
 
-		# stored items (persistent across saves and re-initialization):
-		storedItems = [
-			# Only 'name' is required...
-			{'name': 'StoredProperty', 'default': None, 'readOnly': False,
-			 						'property': True, 'dependable': True},
-		]
-		# Uncomment the line below to store StoredProperty. To clear stored
-		# 	items, use the Storage section of the Component Editor
+	def fetchByTag(self):
+		owner, repoName = self.getRepoData()[0:2]
+		apiEndpoint = f" https://api.github.com/repos/{owner}/{repoName}/releases?per_page={self.ownerComp.par.Searchdepth.eval()}"
+		response = requests.get( apiEndpoint )
+		for releaseDict in self.checkResponse( response ):
+			if re.match( self.ownerComp.par.Tagregex.eval(), releaseDict["name"]): 
+				return self.searchFile( releaseDict )
 		
-		# self.stored = StorageManager(self, ownerComp, storedItems)
 
-	def myFunction(self, v):
-		debug(v)
-
-	def PromotedFunction(self, v):
-		debug(v)
+	def ExternalData(self):
+		if self.ownerComp.par.Mode.eval() == "Latest": return self.fetchLatest()
+		if self.ownerComp.par.Mode.eval() == "Search Tag": return self.fetchByTag()

@@ -67,8 +67,9 @@ class extOlibDependancy:
 		downloadScript 		= pathlib.Path( f"TDImportCache/Scripts/{downloadScriptDAT.id}" )
 		downloadScript.is_file() or downloadScriptDAT.save(downloadScript, createFolders = True)
 		executable = pathlib.Path( app.binFolder, "python.exe" )
-		subprocess.call( 
+		if subprocess.call( 
 			[ executable, downloadScript, url, filepath]
-			) 
+			) :
+			raise Exception( "Error on Download! Try again. Enable TOUCH_TEXT_CONSOLE to read info of subprocess.")
 		return filepath
 	
