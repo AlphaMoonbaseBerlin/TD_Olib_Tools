@@ -17,11 +17,6 @@ class extOlibDependancy:
 		# The component to which this extension is attached
 		self.ownerComp = ownerComp
 
-	def ClearCache(self):
-		self.GetGlobalComponent.cache_clear()
-		self.GetRemoteFilepath.cache_clear()
-		self.ownerComp.cook( force = True )
-
 	def filepath(self)-> pathlib.Path:
 		return pathlib.Path( 
 			self.ownerComp.par.Downloaddirectory.eval(),
