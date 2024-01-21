@@ -42,7 +42,7 @@ class extOlibDependancy:
 		"""Downlaods the remote resource and places a Operator representing it with the given
 		Global Shortcut in the define path.
 		If the file does alreay exist and is placed, it just returns the operator."""
-		globalOPShortcut = self.ownerComp.par.Targetopshortcut.eval()
+		globalOPShortcut = self.ownerComp.par.Globalopshortcut.eval()
 		return getattr( op, globalOPShortcut, None ) or self._downloadAndPlace()
 
 	def _downloadAndPlace(self) -> COMP:
@@ -50,12 +50,12 @@ class extOlibDependancy:
 		if not targetTox: return None
 
 		newComp 					= self._getTargetAndPlace().loadTox( targetTox )
-		newComp.par.opshortcut.val = self.ownerComp.par.Targetopshortcut.eval()
+		newComp.par.opshortcut.val = self.ownerComp.par.Globalopshortcut.eval()
 		return newComp
 
 	def _getTargetAndPlace(self) -> COMP:
 		operator = td.root
-		for path_element in self.ownerComp.par.Targetplace.val.split("/"):
+		for path_element in self.ownerComp.par.Globallocation.eval().split("/"):
 			if not path_element: continue
 			operator = operator.op(path_element) or operator.create(baseCOMP, tdu.legalName(path_element))
 		return operator
