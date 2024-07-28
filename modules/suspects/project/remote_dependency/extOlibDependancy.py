@@ -2,7 +2,7 @@
 Name : extOlibDependancy
 Author : Wieland@AMB-ZEPH15
 Saveorigin : Project.toe
-Saveversion : 2022.32660
+Saveversion : 2022.35320
 Info Header End'''
 
 import pathlib
@@ -34,6 +34,9 @@ class extOlibDependancy:
 		"""Downloads the file from the selected source and returns the filepath."""
 		filepath = self._filepath()
 		if filepath.is_file(): return filepath
+		packagedFilepath = self._getPackagedFile( filepath )
+		if packagedFilepath: return packagedFilepath
+
 		downloadURL = self._fetchRemoteData()
 		return self._downloadFile( 	filepath,
 									downloadURL )
@@ -71,3 +74,30 @@ class extOlibDependancy:
 			raise Exception( "Error on Download! Try again. Enable TOUCH_TEXT_CONSOLE to read info of subprocess.")
 		return filepath
 	
+	def Package(self):
+		self.ownerComp.vfs.addFile(
+			self.GetRemoteFilepath(), overrideName = self.GetRemoteFilepath().name
+		)
+		self.ownerComp.cook( force= True)
+	
+	def Unpackage(self):
+		try:
+			self.ownerComp.vfs[self.GetRemoteFilepath().name].destroy()
+			self.ownerComp.cook( force=True)
+		except tdAttributeError:
+			pass
+
+	def _getPackagedFile(self, filepath:pathlib.Path):
+		try:
+			self.ownerComp.vfs[filepath.name].export( filepath.parent )
+			return filepath
+		except tdAttributeError:
+			pass
+		return None
+	
+	@property
+	def PackageVFS(self):
+		try:
+			return self.ownerComp.vfs[self._filepath().name]
+		except tdAttributeError:
+			return None
