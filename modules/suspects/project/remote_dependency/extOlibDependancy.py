@@ -2,7 +2,7 @@
 Name : extOlibDependancy
 Author : Wieland@AMB-ZEPH15
 Saveorigin : Project.toe
-Saveversion : 2022.35320
+Saveversion : 2023.11880
 Info Header End'''
 
 import pathlib
@@ -67,7 +67,7 @@ class extOlibDependancy:
 		downloadScriptDAT 	= self.ownerComp.op("downloadScript")
 		downloadScript 		= pathlib.Path( f"TDImportCache/Scripts/{downloadScriptDAT.id}" )
 		downloadScript.is_file() or downloadScriptDAT.save(downloadScript, createFolders = True)
-		executable = pathlib.Path( app.binFolder, "python.exe" )
+		executable = app.pythonExecutable
 		if subprocess.call( 
 			[ executable, downloadScript, url, filepath]
 			) :
