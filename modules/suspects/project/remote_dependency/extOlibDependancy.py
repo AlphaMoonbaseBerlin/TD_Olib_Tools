@@ -23,11 +23,12 @@ class extOlibDependancy:
 		)
 
 	def _fetchRemoteData(self):
-		targetmode = self.ownerComp.par.Target.eval()
-		if targetmode == "Olib"		: remote = self.ownerComp.op("olib_remote")
-		if targetmode == "Github"	: remote = self.ownerComp.op("github_remote")
-		if targetmode == "Url"		: remote = self.ownerComp.op("url_remote")
-		if targetmode == "Callback" : remote = self.ownerComp.op("callback_remote")
+		targetmode 		= self.ownerComp.par.Target.eval()
+		if targetmode 	== "Olib"		: remote = self.ownerComp.op("olib_remote")
+		if targetmode 	== "Github"		: remote = self.ownerComp.op("github_remote")
+		if targetmode 	== "Url"		: remote = self.ownerComp.op("url_remote")
+		if targetmode 	== "Callback" 	: remote = self.ownerComp.op("callback_remote")
+		if targetmode 	== "COMP"		: remote = self.ownerComp.op("comp_remote")
 		return remote.ExternalData()
 
 	def GetRemoteFilepath(self) -> pathlib.Path:
@@ -38,6 +39,8 @@ class extOlibDependancy:
 		if packagedFilepath: return packagedFilepath
 
 		downloadURL = self._fetchRemoteData()
+		if downloadURL.startwith("file://"):
+			return downloadURL.removeprefix("file://")
 		return self._downloadFile( 	filepath,
 									downloadURL )
 	
@@ -53,7 +56,7 @@ class extOlibDependancy:
 		if not targetTox: return None
 
 		newComp 					= self._getTargetAndPlace().loadTox( targetTox )
-		newComp.par.opshortcut.val = self.ownerComp.par.Globalopshortcut.eval()
+		newComp.par.opshortcut.val  = self.ownerComp.par.Globalopshortcut.eval()
 		return newComp
 
 	def _getTargetAndPlace(self) -> COMP:
